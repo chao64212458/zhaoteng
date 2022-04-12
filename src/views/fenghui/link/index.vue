@@ -70,11 +70,11 @@ export default {
       rules: {
         linkName: [
           { required: true, message: '友情链接名称不能为空', trigger: 'blur' },
-          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ],
         linkUrl: [
           { required: true, message: '友情链接URL不能为空', trigger: 'blur' },
-          { min: 2, max: 50, message: '长度在 2 到 100 个字符', trigger: 'blur' }
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ]
       }
     }

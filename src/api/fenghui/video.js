@@ -31,7 +31,19 @@ export function edit(data) {
 }
 
 // axios代码 上传请求
-export function add(param) {
+export function add(data) {
+  return request({
+    url: 'api/video/nofile',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data
+  })
+}
+
+// axios代码 上传请求
+export function addFile(param) {
   return request({
     url: 'api/video',
     method: 'post',
@@ -55,4 +67,4 @@ export function add(param) {
 //   })
 // }
 
-export default { add, edit, del }
+export default { add, edit, del, addFile }

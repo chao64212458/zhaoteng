@@ -1,20 +1,13 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-editor-container">
-     
       <panel-group @handleSetLineChartData="handleSetLineChartData" />
-
     </div>
   </div>
 </template>
 
 <script>
-import GithubCorner from '@/components/GithubCorner'
 import PanelGroup from './dashboard/PanelGroup'
-import LineChart from './dashboard/LineChart'
-import RadarChart from '@/components/Echarts/RadarChart'
-import PieChart from '@/components/Echarts/PieChart'
-import BarChart from '@/components/Echarts/BarChart'
 
 const lineChartData = {
   newVisitis: {
@@ -38,12 +31,7 @@ const lineChartData = {
 export default {
   name: 'Dashboard',
   components: {
-    GithubCorner,
-    PanelGroup,
-    LineChart,
-    RadarChart,
-    PieChart,
-    BarChart
+    PanelGroup
   },
   data() {
     return {

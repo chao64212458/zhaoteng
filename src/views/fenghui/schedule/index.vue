@@ -19,6 +19,9 @@
           <el-form-item label="议程详情">
             <el-input v-model="form.scheduleDetail" :rows="3" type="textarea" style="width: 370px;" />
           </el-form-item>
+          <el-form-item label="排序">
+            <el-input v-model="form.sortNum" type="number" style="width: 370px;" />
+          </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button type="text" @click="crud.cancelCU">取消</el-button>
@@ -33,6 +36,7 @@
         <el-table-column prop="scheduleTo" label="议程结束" />
         <el-table-column prop="scheduleAction" label="议程内容" />
         <el-table-column prop="scheduleDetail" label="议程详情" />
+        <el-table-column prop="sortNum" label="排序" />
         <el-table-column v-if="checkPer(['admin','schedule:edit','schedule:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
             <udOperation
@@ -56,7 +60,7 @@ import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
 import pagination from '@crud/Pagination'
 
-const defaultForm = { scheduleId: null, scheduleFrom: null, scheduleTo: null, scheduleAction: null, scheduleDetail: null, createUser: null, createTime: null, updateUser: null, updateTime: null }
+const defaultForm = { scheduleId: null, scheduleFrom: null, scheduleTo: null, scheduleAction: null, scheduleDetail: null, sortNum: 99, createUser: null, createTime: null, updateUser: null, updateTime: null }
 export default {
   name: 'TSchedule',
   components: { pagination, crudOperation, udOperation },
@@ -70,6 +74,8 @@ export default {
         add: ['admin', 'schedule:add'],
         edit: ['admin', 'schedule:edit'],
         del: ['admin', 'schedule:del']
+      },
+      rules: {
       }
     }
   },

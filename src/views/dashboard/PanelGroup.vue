@@ -164,6 +164,9 @@ import CountTo from 'vue-count-to'
 import request from '@/utils/request'
 
 export default {
+  components: {
+    CountTo
+  },
   data() {
     return {
       articleType0: 0,
@@ -180,35 +183,32 @@ export default {
       projectCount: 0
     }
   },
-  components: {
-    CountTo
-  },
   mounted: function() {
-    const that = this;
-    request({url:"/api/article/summary", method: 'get'}).then(function(respon){
+    const that = this
+    request({ url: '/api/article/summary', method: 'get' }).then(function(respon) {
       console.info(respon)
       that.articleType0 = respon.articleType0
       that.articleType1 = respon.articleType1
       that.articleType2 = respon.articleType2
-    }).catch(function(error){ console.error(error) })
-    request({url:"/api/report/summary", method: 'get'}).then(function(respon){
+    }).catch(function(error) { console.error(error) })
+    request({ url: '/api/report/summary', method: 'get' }).then(function(respon) {
       console.info(respon)
       that.reportType0 = respon.reportType0
       that.reportType1 = respon.reportType1
       that.reportType2 = respon.reportType2
       that.reportType3 = respon.reportType3
-    }).catch(function(error){ console.error(error) })
-    request({url:"/api/video/summary", method: 'get'}).then(function(respon){
+    }).catch(function(error) { console.error(error) })
+    request({ url: '/api/video/summary', method: 'get' }).then(function(respon) {
       console.info(respon)
       that.videoType0 = respon.videoType0
       that.videoType1 = respon.videoType1
       that.videoType2 = respon.videoType2
       that.videoType3 = respon.videoType3
-    }).catch(function(error){ console.error(error) })
-    request({url:"/api/project/summary", method: 'get'}).then(function(respon){
+    }).catch(function(error) { console.error(error) })
+    request({ url: '/api/project/summary', method: 'get' }).then(function(respon) {
       console.info(respon)
       that.projectCount = respon
-    }).catch(function(error){ console.error(error) })
+    }).catch(function(error) { console.error(error) })
   }
 }
 </script>

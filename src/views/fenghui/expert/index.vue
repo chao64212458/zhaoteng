@@ -6,8 +6,8 @@
         <!-- 搜索 -->
         <label class="el-form-item-label">姓名</label>
         <el-input v-model="query.expertName" clearable placeholder="姓名" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
-        <!-- <label class="el-form-item-label">姓名（英文）</label>
-        <el-input v-model="query.expertEnName" clearable placeholder="姓名（英文）" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" /> -->
+        <label class="el-form-item-label">姓名（英文）</label>
+        <el-input v-model="query.expertEnName" clearable placeholder="姓名（英文）" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <label class="el-form-item-label">公司</label>
         <el-input v-model="query.expertCompany" clearable placeholder="公司" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
         <label class="el-form-item-label">地域</label>
@@ -28,6 +28,15 @@
             :value="item.value"
           />
         </el-select>
+        <label class="el-form-item-label">首页推荐</label>
+        <el-select v-model="query.topFlg" clearable placeholder="请选择" class="filter-item" @keyup.enter.native="crud.toQuery">
+          <el-option
+            v-for="item in dict.article_top_type"
+            :key="item.id"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
         <rrOperation :crud="crud" />
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
@@ -38,9 +47,9 @@
           <el-form-item label="姓名" prop="expertName">
             <el-input v-model="form.expertName" style="width: 370px;" />
           </el-form-item>
-          <!-- <el-form-item label="姓名（英文）" prop="expertEnName">
+          <el-form-item label="姓名（英文）" prop="expertEnName">
             <el-input v-model="form.expertEnName" style="width: 370px;" />
-          </el-form-item> -->
+          </el-form-item>
           <el-form-item label="公司" prop="expertCompany">
             <el-input v-model="form.expertCompany" style="width: 370px;" />
           </el-form-item>
@@ -66,6 +75,9 @@
                 :value="item.value"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="首页推荐">
+            <el-radio v-for="item in dict.article_top_type" :key="item.id" v-model="form.topFlg" :label="item.value">{{ item.label }}</el-radio>
           </el-form-item>
           <el-form-item label="描述" prop="expertDetail">
             <el-input v-model="form.expertDetail" :rows="5" type="textarea" style="width: 500px;" />
@@ -98,7 +110,12 @@
         <el-table-column type="selection" width="55" />
         <el-table-column prop="expertId" label="专家ID" />
         <el-table-column prop="expertName" label="姓名" />
-        <!-- <el-table-column prop="expertEnName" label="姓名（英文）" /> -->
+        <el-table-column prop="expertEnName" label="姓名（英文）" />
+        <el-table-column prop="topFlg" label="首页推荐">
+          <template slot-scope="scope">
+            {{ dict.label.article_top_type[scope.row.topFlg] }}
+          </template>
+        </el-table-column>
         <el-table-column prop="expertCompany" label="公司" />
         <el-table-column prop="expertType" label="地域">
           <template slot-scope="scope">
@@ -157,12 +174,12 @@ import Avatar from '@/assets/images/avatar.png'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 let photoFile = ''
-const defaultForm = { expertId: null, expertName: null, expertTitle: 1, expertCompany: null, expertType: 0, expertPosition: '', expertDetail: null, expertPhoto: null, sortNum: 99, createUser: null, createTime: null, updateUser: null, updateTime: null }
+const defaultForm = { expertId: null, expertName: null, expertEnName: null, expertTitle: 1, expertCompany: null, expertType: 0, expertPosition: '', expertDetail: null, expertPhoto: null, sortNum: 99, topFlg: 0, createUser: null, createTime: null, updateUser: null, updateTime: null }
 export default {
   name: 'TExpert',
   components: { pagination, crudOperation, rrOperation, udOperation, myUpload },
   mixins: [presenter(), header(), form(defaultForm), crud()],
-  dicts: ['expert_type', 'expert_title_type'],
+  dicts: ['expert_type', 'expert_title_type', 'article_top_type'],
   cruds() {
     return CRUD({ title: '嘉宾', url: 'api/expert', idField: 'expertId', sort: 'expertId,desc', crudMethod: { ...crudTExpert }})
   },
@@ -184,14 +201,14 @@ export default {
           { required: true, message: '姓名不能为空', trigger: 'blur' },
           { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
         ],
-        // expertEnName: [
-        //   { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
-        // ],
+        expertEnName: [
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
+        ],
         expertCompany: [
-          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ],
         expertPosition: [
-          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ],
         expertDetail: [
           { min: 2, max: 5000, message: '长度在 2 到 5000 个字符', trigger: 'blur' }
@@ -199,7 +216,10 @@ export default {
       },
       queryTypeOptions: [
         { key: 'expertName', display_name: '姓名' },
-        { key: 'expertCompany', display_name: '公司' }
+        { key: 'expertEnName', display_name: '姓名（英文）' },
+        { key: 'expertCompany', display_name: '公司' },
+        { key: 'expertType', display_name: '地域' },
+        { key: 'topFlg', display_name: '首页推荐' }
       ]
     }
   },
@@ -215,15 +235,31 @@ export default {
       return true
     },
     [CRUD.HOOK.beforeToEdit](crud, form) {
-      photoFile = form.expertPhoto
+      photoFile = `${form.expertPhoto}`
       form.expertType = `${form.expertType}`
+      form.topFlg = `${form.topFlg}`
       form.expertTitle = `${form.expertTitle}`
+      if (this.$refs.expertPhoto) {
+        if (!photoFile) {
+          this.$refs.expertPhoto.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + photoFile
+        } else {
+          this.$refs.expertPhoto.src = Avatar
+        }
+      }
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      //this.$refs.expertPhoto.src = Avatar
+      photoFile = `${form.expertPhoto}`
       form.expertType = `${form.expertType}`
+      form.topFlg = `${form.topFlg}`
       form.expertTitle = `${form.expertTitle}`
+      if (this.$refs.expertPhoto) {
+        if (!photoFile) {
+          this.$refs.expertPhoto.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + photoFile
+        } else {
+          this.$refs.expertPhoto.src = Avatar
+        }
+      }
     },
     [CRUD.HOOK.afterValidateCU](crud) {
       crud.form.expertPhoto = photoFile

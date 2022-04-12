@@ -26,8 +26,8 @@
               :width="288"
               :height="123"
               :url="imagesUploadApi"
-              noCircle=true
-              noSquare=true
+              :no-circle="true"
+              :no-square="true"
               @crop-upload-success="cropUploadSuccess"
             />
             <label class="el-form-item-label">※图片尺寸要求：288 x 123</label>
@@ -90,7 +90,7 @@ import myUpload from 'vue-image-crop-upload'
 import Avatar from '@/assets/images/noimage.jpg'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
-let iconFile = ""
+let iconFile = ''
 const defaultForm = { partnerId: null, partnerName: null, partnerIcon: null, sortNum: 99, createUser: null, createTime: null, updateUser: null, updateTime: null }
 export default {
   name: 'TPartner',
@@ -114,7 +114,7 @@ export default {
       rules: {
         partnerName: [
           { required: true, message: '合作伙伴名称不能为空', trigger: 'blur' },
-          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+          { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
         ]
       },
       queryTypeOptions: [
@@ -134,20 +134,34 @@ export default {
       return true
     },
     [CRUD.HOOK.beforeToEdit](crud, form) {
-      iconFile = form.partnerIcon;
+      iconFile = `${form.partnerIcon}`
+      if (this.$refs.partnerIcon) {
+        if (!iconFile) {
+          this.$refs.partnerIcon.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + iconFile
+        } else {
+          this.$refs.partnerIcon.src = Avatar
+        }
+      }
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      this.$refs.partnerIcon.src = Avatar;
+      iconFile = `${form.partnerIcon}`
+      if (this.$refs.partnerIcon) {
+        if (!iconFile) {
+          this.$refs.partnerIcon.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + iconFile
+        } else {
+          this.$refs.partnerIcon.src = Avatar
+        }
+      }
     },
     [CRUD.HOOK.afterValidateCU](crud) {
-      crud.form.partnerIcon = iconFile;
+      crud.form.partnerIcon = iconFile
     },
     toggleShow() {
       this.show = !this.show
     },
     cropUploadSuccess(jsonData, field) {
-      this.$refs.partnerIcon.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + jsonData.realName;
+      this.$refs.partnerIcon.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + jsonData.realName
       iconFile = jsonData.realName
       store.dispatch('GetInfo').then(() => {})
     }

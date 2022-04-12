@@ -6,16 +6,8 @@
         <!-- 搜索 -->
         <label class="el-form-item-label">标题</label>
         <el-input v-model="query.title" clearable placeholder="标题" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
-        <label class="el-form-item-label">影像分类</label>
-        <!-- <el-input v-model="query.videoType" clearable placeholder="影像分类" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" /> -->
-        <el-select v-model="query.videoType" clearable placeholder="请选择" class="filter-item" @keyup.enter.native="crud.toQuery">
-          <el-option
-            v-for="item in dict.report_type"
-            :key="item.id"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        <label class="el-form-item-label">发布时间</label>
+        <date-range-picker v-model="query.articleDate" class="date-item" />
         <rrOperation :crud="crud" />
       </div>
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
@@ -26,15 +18,8 @@
           <el-form-item label="标题" prop="title">
             <el-input v-model="form.title" style="width: 370px;" />
           </el-form-item>
-          <el-form-item label="影像分类" prop="videoType">
-            <el-select v-model="form.videoType" filterable placeholder="请选择">
-              <el-option
-                v-for="item in dict.report_type"
-                :key="item.id"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+          <el-form-item label="发布时间">
+            <el-date-picker v-model="form.articleDate" type="datetime" style="width: 370px;" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" @change="getPublishDate" />
           </el-form-item>
           <el-form-item label="缩略图">
             <!-- <el-input v-model="form.thumbnail" style="width: 370px;" /> -->
@@ -44,27 +29,16 @@
               v-model="show"
               field="file"
               :headers="headers"
-              :width="676"
-              :height="374"
+              :width="455"
+              :height="533"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
               @crop-upload-success="cropUploadSuccess"
             />
-            <label class="el-form-item-label">※图片尺寸要求：676 x 374</label>
+            <label class="el-form-item-label">※图片尺寸要求：455 x 533</label>
           </el-form-item>
-          <el-form-item v-if="crud.status.add" label="影像文件">
-            <!-- <el-input v-model="form.videoFile" style="width: 370px;" /> -->
-            <!-- <el-upload
-              ref="upload"
-              :limit="1"
-              :before-upload="beforeUpload"
-              :auto-upload="false"
-              :headers="headers"
-              :on-success="handleSuccess"
-              :on-error="handleError"
-              :action="'/api/video?name='+ this.form.title +'&title='+ this.form.title + '&videoType=' + this.form.videoType"
-            > -->
+          <el-form-item v-if="crud.status.add" label="资料文件">
             <el-upload
               ref="upload"
               :limit="1"
@@ -77,14 +51,11 @@
               :on-error="handleError"
             >
               <div class="eladmin-upload"><i class="el-icon-upload" /> 添加文件</div>
-              <div slot="tip" class="el-upload__tip">请上传视频格式文件，且不超过500M</div>
+              <div slot="tip" class="el-upload__tip">请上传资料文件，且不超过500M</div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="外部链接URL" prop="linkUrl">
-            <el-input ref="linkUrl" v-model="form.linkUrl" style="width: 370px;" />
-          </el-form-item>
-          <el-form-item label="排序" prop="sortNum">
-            <el-input v-model="form.sortNum" type="number" style="width: 370px;" />
+          <el-form-item v-if="crud.status.edit" label="资料文件">
+            <p>{{ form.filename }}</p>
           </el-form-item>
           <el-form-item label="影像描述" />
         </el-form>
@@ -108,16 +79,11 @@
       <!--表格渲染-->
       <el-table ref="table" v-loading="crud.loading" :data="crud.data" size="small" style="width: 100%;" @selection-change="crud.selectionChangeHandler">
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="videoId" label="影像ID" />
+        <el-table-column prop="articleId" label="资料ID" />
         <el-table-column prop="title" label="标题" />
-        <el-table-column prop="videoType" label="影像分类">
-          <template slot-scope="scope">
-            {{ dict.label.report_type[scope.row.videoType] }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="sortNum" label="排序" />
-        <el-table-column prop="linkUrl" label="外链Url" />
-        <el-table-column prop="path" label="预览图">
+        <el-table-column prop="articleDate" label="发布时间" />
+        <el-table-column prop="filename" label="文件名" />
+        <el-table-column prop="path" label="缩略图">
           <template slot-scope="{row}">
             <el-image
               :src="row.thumbnail=='null'?'':baseApi + '/file/images/' + row.thumbnail"
@@ -132,7 +98,7 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column v-if="checkPer(['admin','video:edit','video:del'])" label="操作" width="150px" align="center">
+        <el-table-column v-if="checkPer(['admin','material:edit','material:del'])" label="操作" width="150px" align="center">
           <template slot-scope="scope">
             <udOperation
               :data="scope.row"
@@ -148,7 +114,8 @@
 </template>
 
 <script>
-import crudTVideo from '@/api/fenghui/video'
+import DateRangePicker from '@/components/DateRangePicker'
+import crudTMaterial from '@/api/fenghui/material'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
 import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
@@ -163,14 +130,13 @@ import { mapGetters } from 'vuex'
 import Avatar from '@/assets/images/noimage.jpg'
 import E from 'wangeditor'
 let image = ''
-const defaultForm = { videoId: null, title: null, videoType: 0, videoFile: null, thumbnail: null, content: '', linkUrl: '', sortNum: 99, searchType: 3, createUser: null, createTime: null, updateUser: null, updateTime: null }
+const defaultForm = { articleId: null, title: null, articleDate: null, materialFile: null, filename: null, thumbnail: null, content: '', createUser: null, createTime: null, updateUser: null, updateTime: null }
 export default {
-  name: 'Video',
-  components: { pagination, crudOperation, rrOperation, udOperation, myUpload },
+  name: 'Material',
+  components: { pagination, crudOperation, rrOperation, udOperation, myUpload, DateRangePicker },
   mixins: [presenter(), header(), form(defaultForm), crud()],
-  dicts: ['report_type'],
   cruds() {
-    return CRUD({ title: '峰会影像', url: 'api/video', idField: 'videoId', sort: 'videoId,desc', crudMethod: { ...crudTVideo }})
+    return CRUD({ title: '报告资料', url: 'api/material', idField: 'articleId', sort: 'articleId,desc', crudMethod: { ...crudTMaterial }})
   },
   data() {
     return {
@@ -181,9 +147,10 @@ export default {
       editorContent: '',
       height: document.documentElement.clientHeight - 200 + 'px',
       permission: {
-        add: ['admin', 'video:add'],
-        edit: ['admin', 'video:edit'],
-        del: ['admin', 'video:del']
+        add: ['admin', 'material:add'],
+        addFile: ['admin', 'material:add'],
+        edit: ['admin', 'material:edit'],
+        del: ['admin', 'material:del']
       },
       headers: { 'Authorization': getToken() },
       uploadFile: undefined,
@@ -193,17 +160,10 @@ export default {
         title: [
           { required: true, message: '标题不能为空', trigger: 'blur' },
           { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
-        ],
-        videoType: [
-          { required: true, message: '影像分类不能为空', trigger: 'blur' }
-        ],
-        linkUrl: [
-          { min: 0, max: 500, message: '长度在 500 个字符以内', trigger: 'blur' }
         ]
       },
       queryTypeOptions: [
-        { key: 'title', display_name: '标题' },
-        { key: 'videoType', display_name: '影像分类' }
+        { key: 'title', display_name: '标题' }
       ]
     }
   },
@@ -224,15 +184,8 @@ export default {
     upload() {
       // uploadData.title = this.form.title
       // uploadData.videoType = this.form.videoType
-
-      console.info(this.$refs.upload)
-      console.info(this.$refs.linkUrl)
       if (this.$refs.upload.uploadFiles.length === 0) {
-        if (this.$refs.linkUrl.value.length > 0) {
-          this.crud.submitCU()
-          return
-        }
-        this.$message.error('请选择影像文件或设置外链Url!')
+        this.$message.error('请选择资料文件!')
         return
       }
       this.$refs.upload.submit()
@@ -252,59 +205,40 @@ export default {
       this.sumitForm(this.uploadFile)
     },
     sumitForm(file) {
+      console.info(file)
       this.formData = new FormData()
-      if (file != null) {
-        this.formData.append('file', file)
-      }
-      this.formData.append('videoId', this.crud.getDataId(this.crud.form))
-      this.formData.append('name', this.crud.form.name)
+      this.formData.append('file', file)
+      this.formData.append('articleId', this.crud.getDataId(this.crud.form))
+      this.formData.append('name', file.name)
       this.formData.append('title', this.crud.form.title)
-      this.formData.append('videoType', this.crud.form.videoType)
+      this.formData.append('articleDate', this.crud.form.articleDate)
       this.formData.append('content', this.editorContent)
       this.formData.append('thumbnail', image)
-      this.formData.append('rules', this.rules)
-      this.formData.append('sortNum', this.crud.form.sortNum)
-      this.formData.append('linkUrl', this.crud.form.linkUrl)
-      // this.crud.form = this.formData
-      // this.crud.form.rules = this.rules
-      // this.crud.submitCU()
 
       if (this.crud.status.add === CRUD.STATUS.PREPARED) {
         this.crud.status.add = CRUD.STATUS.PROCESSING
-        if (file == null) {
-          console.info('外链提交!')
-          this.crud.crudMethod.add(this.formData).then(() => {
-            this.crud.status.add = CRUD.STATUS.NORMAL
-            this.crud.resetForm()
-            this.crud.addSuccessNotify()
-            this.crud.toQuery()
+        this.crud.crudMethod.addFile(this.formData).then(() => {
+          this.crud.status.add = CRUD.STATUS.NORMAL
+          this.crud.resetForm()
+          this.crud.addSuccessNotify()
+          this.crud.toQuery()
 
-            this.handleSuccess()
-          }).catch(() => {
-            this.crud.status.add = CRUD.STATUS.PREPARED
-            // ncallVmHook(crud, CRUD.HOOK.afterAddError)
-          })
-        } else {
-          this.crud.crudMethod.addFile(this.formData).then(() => {
-            this.crud.status.add = CRUD.STATUS.NORMAL
-            this.crud.resetForm()
-            this.crud.addSuccessNotify()
-            this.crud.toQuery()
-
-            this.handleSuccess()
-          }).catch(() => {
-            this.crud.status.add = CRUD.STATUS.PREPARED
-            // ncallVmHook(crud, CRUD.HOOK.afterAddError)
-          })
-        }
+          this.handleSuccess()
+        }).catch(() => {
+          this.crud.status.add = CRUD.STATUS.PREPARED
+          // ncallVmHook(crud, CRUD.HOOK.afterAddError)
+        })
       }
     },
     handleSuccess() {
       console.info('提交成功')
       this.crud.notify('提交成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
       this.$refs.upload.clearFiles()
+      // this.crud.status.add = CRUD.STATUS.NORMAL
+      // this.crud.resetForm()
       this.editorContent = ''
       image = this.Avatar
+      // this.crud.toQuery()
     },
     // 监听上传失败
     handleError(e, file, fileList) {
@@ -318,7 +252,6 @@ export default {
     },
     [CRUD.HOOK.beforeToEdit](crud, form) {
       image = `${form.thumbnail}`
-      form.videoType = `${form.videoType}`
       this.editorContent = `${form.content}`
       if (this.editor) {
         this.editor.txt.html(this.editorContent)
@@ -334,7 +267,6 @@ export default {
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
       image = `${form.thumbnail}`
-      form.videoType = `${form.videoType}`
       this.editorContent = `${form.content}`
       if (this.editor) {
         this.editor.txt.html(this.editorContent)
@@ -355,6 +287,9 @@ export default {
       if (!this.editor) {
         this.initEditor()
       }
+    },
+    getPublishDate(date) {
+      this.form.articleDate = date
     },
     initEditor() {
       const _this = this
@@ -380,6 +315,8 @@ export default {
         // files 是 input 中选中的文件列表
         // insert 是获取图片 url 后，插入到编辑器的方法
         files.forEach(video => {
+          console.info(video)
+          console.info('url:' + _this.videosUploadApi)
           upload(_this.videosUploadApi + '?name=' + video.name, video).then(res => {
             console.info(res)
             const data = res.data
@@ -423,9 +360,9 @@ export default {
 
 <style scoped>
   .avatar {
-    width: 676px;
-    height: 374px;
-    border-radius: 28px;
+    width: 455px;
+    height: 533px;
+    border-radius: 0px;
   }
   .text {
     text-align:left;

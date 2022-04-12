@@ -20,14 +20,14 @@
               :height="134"
               :headers="headers"
               :url="imagesUploadApi"
-              noCircle
-              noSquare
+              :no-circle="true"
+              :no-square="true"
               @crop-upload-success="cropUploadSuccess"
             />
             <label class="el-form-item-label">※图片尺寸要求：134 x 134</label>
           </el-form-item>
           <el-form-item label="开关">
-            <el-radio v-model="form.open" v-for="item in dict.article_top_type" :key="item.id" :label="item.value">{{ item.label }}</el-radio>
+            <el-radio v-for="item in dict.article_top_type" :key="item.id" v-model="form.open" :label="item.value">{{ item.label }}</el-radio>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -45,7 +45,7 @@
             <el-image
               :src=" baseApi + '/file/images/' + row.qrcode"
               :preview-src-list="[baseApi + '/file/images/' + row.qrcode]"
-              fit="contain" 
+              fit="contain"
               lazy
               class="avatar"
             >
@@ -65,7 +65,7 @@
             <udOperation
               :data="scope.row"
               :permission="permission"
-              disabledDle
+              :disabled-dle="true"
             />
           </template>
         </el-table-column>
@@ -84,15 +84,13 @@ import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
 import crudTQrcode from '@/api/fenghui/qrcode'
 import CRUD, { presenter, header, form, crud } from '@crud/crud'
-import rrOperation from '@crud/RR.operation'
-import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
 import pagination from '@crud/Pagination'
-let image=''
+let image = ''
 const defaultForm = { qrId: null, title: null, qrcode: null, open: 0, createUser: null, createTime: null, updateUser: null, updateTime: null }
 export default {
   name: 'TQrcode',
-  components: { pagination, crudOperation, rrOperation, udOperation, myUpload },
+  components: { pagination, udOperation, myUpload },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['article_top_type'],
   cruds() {
@@ -130,12 +128,12 @@ export default {
       return true
     },
     [CRUD.HOOK.beforeToEdit](crud, form) {
-      image = form.qrcode
+      image = `${form.qrcode}`
       form.open = `${form.open}`
     },
     // 新增与编辑前做的操作
     [CRUD.HOOK.afterToCU](crud, form) {
-      //this.$refs.expertPhoto.src = Avatar
+      image = `${form.qrcode}`
     },
     [CRUD.HOOK.afterValidateCU](crud) {
       crud.form.qrcode = image
