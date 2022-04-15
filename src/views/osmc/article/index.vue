@@ -24,7 +24,7 @@
             :value="item.value"
           />
         </el-select>
-        <label class="el-form-item-label">轮播推荐</label>
+        <!-- <label class="el-form-item-label">轮播推荐</label>
         <el-select v-model="query.captureFlg" clearable placeholder="请选择" class="filter-item" @keyup.enter.native="crud.toQuery">
           <el-option
             v-for="item in dict.article_top_type"
@@ -32,9 +32,9 @@
             :label="item.label"
             :value="item.value"
           />
-        </el-select>
-        <label class="el-form-item-label">文章来源</label>
-        <el-input v-model="query.articleFrom" clearable placeholder="文章来源" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" />
+        </el-select> -->
+        <!-- <label class="el-form-item-label">文章来源</label>
+        <el-input v-model="query.articleFrom" clearable placeholder="文章来源" style="width: 185px;" class="filter-item" @keyup.enter.native="crud.toQuery" /> -->
         <label class="el-form-item-label">发布时间</label>
         <date-range-picker v-model="query.articleDate" class="date-item" />
         <rrOperation :crud="crud" />
@@ -84,7 +84,7 @@
             <el-radio v-for="item in dict.article_top_type" :key="item.id" v-model="form.captureFlg" :label="item.value">{{ item.label }}</el-radio>
           </el-form-item>
           <el-form-item label="发布时间">
-            <el-date-picker v-model="form.articleDate" type="datetime" style="width: 370px;" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" @change="getPublishDate" />
+            <el-date-picker v-model="form.articleDate" type="datetime" style="width: 370px;" format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss" :default-value="nowDate" @change="getPublishDate" />
           </el-form-item>
           <el-form-item label="文章来源" prop="articleFrom">
             <el-input v-model="form.articleFrom" style="width: 370px;" />
@@ -200,17 +200,19 @@ import { mapGetters } from 'vuex'
 import Avatar from '@/assets/images/noimage.jpg'
 import E from 'wangeditor'
 let image = ''
-const defaultForm = { articleId: null, title: null, introduction: '', content: '', thumbnail: null, linkUrl: null, saveFilename: null, filename: null, topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: null, searchType: 0, createUser: null, createTime: null, articleType: 0, articleDate: null, articleFrom: null }
+const defaultForm = { articleId: null, title: '', introduction: '', content: '', thumbnail: null, linkUrl: '', saveFilename: '', filename: '', topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: '', searchType: 0, createUser: null, createTime: null, articleType: 0, articleDate: null, articleFrom: '' }
 export default {
   name: 'Article',
   components: { pagination, crudOperation, rrOperation, udOperation, myUpload, DateRangePicker },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['article_top_type', 'article_type'],
   cruds() {
-    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', sort: ['articleId,desc', 'topFlg,asc'], crudMethod: { ...crudTArticle }})
+    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', sort: ['topFlg,asc', 'articleId,desc'], optShow: { add: true, edit: true, del: true, reset: false, download: false }, crudMethod: { ...crudTArticle }})
   },
   data() {
     return {
+      nowDate: new Date(),
+      loading: false,
       show: false,
       Avatar: Avatar,
       headers: {
@@ -226,6 +228,9 @@ export default {
         title: [
           { required: true, message: '标题不能为空', trigger: 'blur' },
           { min: 2, max: 200, message: '长度在 2 到 200 个字符', trigger: 'blur' }
+        ],
+        articleDate: [
+          { required: true, message: '发布时间不能为空', trigger: 'blur' }
         ],
         articleType: [
           { required: true, message: '文章类型不能为空', trigger: 'blur' }
@@ -391,7 +396,13 @@ export default {
       this.formData.append('captureFlg', this.crud.form.captureFlg)
       this.formData.append('tips', this.crud.form.tips)
       this.formData.append('articleType', this.crud.form.articleType)
-      this.formData.append('articleDate', this.crud.form.articleDate)
+      console.info('articleDate' + this.crud.form.articleDate)
+      if (this.crud.form.articleDate === null) {
+        this.formData.append('articleDate', this.formatDateTime(new Date()))
+        console.info('articleDate' + this.crud.form.articleDate)
+      } else {
+        this.formData.append('articleDate', this.crud.form.articleDate)
+      }
       this.formData.append('articleFrom', this.crud.form.articleFrom)
       this.formData.append('rules', this.rules)
 
@@ -409,6 +420,20 @@ export default {
           // ncallVmHook(crud, CRUD.HOOK.afterAddError)
         })
       }
+    },
+    formatDateTime(date) {
+      var y = date.getFullYear()
+      var m = date.getMonth() + 1
+      m = m < 10 ? ('0' + m) : m
+      var d = date.getDate()
+      d = d < 10 ? ('0' + d) : d
+      var h = date.getHours()
+      h = h < 10 ? ('0' + h) : h
+      var minute = date.getMinutes()
+      minute = minute < 10 ? ('0' + minute) : minute
+      var second = date.getSeconds()
+      second = second < 10 ? ('0' + second) : second
+      return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second
     },
     handleSuccess() {
       console.info('提交成功')
