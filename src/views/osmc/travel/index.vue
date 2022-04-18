@@ -110,14 +110,14 @@ import Avatar from '@/assets/images/noimage.jpg'
 import E from 'wangeditor'
 
 let image = ''
-const defaultForm = { articleId: null, title: null, introduction: '', content: '', thumbnail: null, linkUrl: null, saveFilename: null, filename: null, topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: null, searchType: 0, createUser: null, createTime: null, articleType: 18, subType: 0, articleDate: null, articleFrom: null }
+const defaultForm = { articleId: null, title: null, introduction: '', content: '', thumbnail: null, linkUrl: null, saveFilename: null, filename: null, topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: null, searchType: 0, createUser: null, createTime: null, articleType: 13, subType: 0, articleDate: null, articleFrom: null }
 export default {
   name: 'Article',
   components: { pagination, crudOperation, rrOperation, udOperation },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['article_top_type', 'article_type', 'travel_type'],
   cruds() {
-    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', articleType: 16, sort: ['articleId,desc', 'topFlg,asc'],
+    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', sort: ['articleId,desc', 'topFlg,asc'],
       optShow: { add: true, edit: true, del: true, reset: false, download: false }, crudMethod: { ...crudTArticle }})
   },
   data() {
@@ -168,7 +168,7 @@ export default {
   methods: {
     // 刷新前
     [CRUD.HOOK.beforeRefresh](crud, form) {
-      crud.query.articleType = 18
+      crud.query.articleType = 13
     },
     // 编辑前初始化
     [CRUD.HOOK.beforeToEdit](crud, form) {

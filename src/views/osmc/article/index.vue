@@ -42,7 +42,7 @@
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
       <!--表单组件-->
-      <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="1280px" @opened="onDialogOpen">
+      <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="1380px" @opened="onDialogOpen">
         <el-form ref="form" :model="form" :rules="rules" size="small" label-width="120px">
           <el-form-item label="标题" prop="title">
             <el-input v-model="form.title" style="width: 370px;" />
@@ -111,6 +111,24 @@
           </el-form-item>
           <el-form-item v-if="crud.status.edit" label="附件">
             <p>{{ form.filename }}</p>
+          </el-form-item>
+          <el-form-item label="二维码">
+            <!-- <el-input v-model="form.thumbnail" style="width: 370px;" /> -->
+            <!--上传图片-->
+            <img ref="qrcode" :src="form.qrcode ? baseApi + '/file/images/' + form.qrcode : Avatar" title="点击上传二维码" class="avatar" height="200px" width="200px" @click="toggleQrShow">
+            <myUpload
+              ref="qrcodeRef"
+              v-model="qrshow"
+              field="file"
+              :headers="headers"
+              :width="200"
+              :height="200"
+              :url="imagesUploadApi"
+              :no-circle="true"
+              :no-square="true"
+              @crop-upload-success="qrcodeUploadSuccess"
+            />
+            <label class="el-form-item-label">※图片尺寸要求：200 x 200</label>
           </el-form-item>
           <el-form-item label="文章内容" />
         </el-form>
@@ -201,33 +219,41 @@ import { mapGetters } from 'vuex'
 import Avatar from '@/assets/images/noimage.jpg'
 import E from 'wangeditor'
 let image = ''
+let qrcodeImg = ''
 // 缩略图尺寸
-const imgsize = [{ 'type': 0, size: { 'width': 340, 'height': 260 }},
-  { 'type': 1, size: { 'width': 1200, 'height': 675 }},
-  { 'type': 3, size: { 'width': 300, 'height': 300 }},
-  { 'type': 4, size: { 'width': 450, 'height': 300 }},
-  { 'type': 5, size: { 'width': 450, 'height': 300 }},
-  { 'type': 9, size: { 'width': 500, 'height': 300 }},
-  { 'type': 11, size: { 'width': 960, 'height': 960 }},
-  { 'type': 12, size: { 'width': 500, 'height': 300 }}
+const imgsize = [{ 'type': '0', size: { 'width': 340, 'height': 260 }},
+  { 'type': '1', size: { 'width': 1200, 'height': 675 }},
+  { 'type': '2', size: { 'width': 340, 'height': 260 }},
+  { 'type': '3', size: { 'width': 340, 'height': 260 }},
+  { 'type': '4', size: { 'width': 450, 'height': 300 }},
+  { 'type': '5', size: { 'width': 450, 'height': 300 }},
+  { 'type': '6', size: { 'width': 260, 'height': 260 }},
+  { 'type': '7', size: { 'width': 340, 'height': 260 }},
+  { 'type': '8', size: { 'width': 340, 'height': 260 }},
+  { 'type': '9', size: { 'width': 500, 'height': 300 }},
+  { 'type': '10', size: { 'width': 340, 'height': 260 }},
+  { 'type': '11', size: { 'width': 960, 'height': 960 }},
+  { 'type': '12', size: { 'width': 500, 'height': 300 }},
+  { 'type': '15', size: { 'width': 340, 'height': 260 }}
 ]
-const defaultForm = { articleId: null, title: '', introduction: '', content: '', thumbnail: null, linkUrl: '', saveFilename: '', filename: '', topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: '', searchType: 0, createUser: null, createTime: null, articleType: 0, articleDate: null, articleFrom: '' }
+const defaultForm = { articleId: null, title: '', introduction: '', content: '', thumbnail: null, qrcode: null, linkUrl: '', saveFilename: '', filename: '', topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: '', searchType: 0, createUser: null, createTime: null, articleType: 0, articleDate: null, articleFrom: '' }
 export default {
   name: 'Article',
   components: { pagination, crudOperation, rrOperation, udOperation, myUpload, DateRangePicker },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   dicts: ['article_top_type', 'article_type'],
   cruds() {
-    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', sort: ['topFlg,asc', 'articleId,desc'], optShow: { add: true, edit: true, del: true, reset: false, download: false }, crudMethod: { ...crudTArticle }})
+    return CRUD({ title: '文章', url: 'api/osmc/article', idField: 'articleId', sort: ['topFlg,desc', 'articleId,desc'], optShow: { add: true, edit: true, del: true, reset: false, download: false }, crudMethod: { ...crudTArticle }})
   },
   data() {
     return {
       nowDate: new Date(),
       loading: false,
       show: false,
+      qrshow: false,
       Avatar: Avatar,
-      uploadWidth: 100,
-      uploadHeight: 100,
+      uploadWidth: 340,
+      uploadHeight: 240,
       headers: {
         'Authorization': getToken()
       },
@@ -279,6 +305,7 @@ export default {
     // 编辑前初始化
     [CRUD.HOOK.beforeToEdit](crud, form) {
       image = `${form.thumbnail}`
+      qrcodeImg = `${form.qrcode}`
       form.articleType = `${form.articleType}`
       form.topFlg = `${form.topFlg}`
       form.captureFlg = `${form.captureFlg}`
@@ -301,6 +328,7 @@ export default {
       form.captureFlg = `${form.captureFlg}`
       this.editorContent = `${form.content}`
       image = `${form.thumbnail}`
+      qrcodeImg = `${form.qrcode}`
       if (this.editor) {
         this.editor.txt.html(this.editorContent)
       }
@@ -311,18 +339,28 @@ export default {
           this.$refs.thumbnail.src = Avatar
         }
       }
+      if (this.$refs.qrcode) {
+        if (!qrcodeImg) {
+          this.$refs.qrcode.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + qrcodeImg
+        } else {
+          this.$refs.qrcode.src = Avatar
+        }
+      }
     },
     // 提交前的验证
     [CRUD.HOOK.afterValidateCU](crud) {
       crud.form.thumbnail = image
+      crud.form.qrcode = qrcodeImg
       crud.form.content = this.editorContent
     },
     onDialogOpen() {
       if (!this.editor) {
         this.initEditor()
       }
+      this.selectChange(this.form.articleType)
     },
     selectChange(type) {
+      console.info('type:' + type)
       for (var i = 0; i < imgsize.length; i++) {
         if (imgsize[i].type === type) {
           this.uploadWidth = imgsize[i].size.width
@@ -335,7 +373,9 @@ export default {
 
       this.$refs.uploadRef.width = this.uploadWidth
       this.$refs.uploadRef.height = this.uploadHeight
-      // this.$refs.uploadRef.reload()
+
+      console.info('uploadWidth:' + this.uploadWidth)
+      console.info('uploadHeight:' + this.uploadHeight)
     },
     initEditor() {
       const _this = this
@@ -420,6 +460,7 @@ export default {
       this.formData.append('introduction', this.crud.form.introduction)
       this.formData.append('content', this.editorContent)
       this.formData.append('thumbnail', image)
+      this.formData.append('qrcode', qrcodeImg)
       this.formData.append('topFlg', this.crud.form.topFlg)
       this.formData.append('captureFlg', this.crud.form.captureFlg)
       this.formData.append('tips', this.crud.form.tips)
@@ -483,10 +524,19 @@ export default {
     toggleShow() {
       this.show = !this.show
     },
+    toggleQrShow() {
+      this.qrshow = !this.qrshow
+    },
     cropUploadSuccess(jsonData, field) {
       console.log(jsonData)
       this.$refs.thumbnail.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + jsonData.realName
       image = jsonData.realName
+      store.dispatch('GetInfo').then(() => {})
+    },
+    qrcodeUploadSuccess(jsonData, field) {
+      console.log(jsonData)
+      this.$refs.qrcode.src = process.env.VUE_APP_BASE_API === '/' ? '' : process.env.VUE_APP_BASE_API + '/file/images/' + jsonData.realName
+      qrcodeImg = jsonData.realName
       store.dispatch('GetInfo').then(() => {})
     },
     imgAdd(pos, $file) {
