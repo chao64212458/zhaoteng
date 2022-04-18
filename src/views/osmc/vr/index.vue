@@ -23,14 +23,14 @@
               v-model="show"
               field="file"
               :headers="headers"
-              :width="288"
-              :height="123"
+              :width="1500"
+              :height="800"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
               @crop-upload-success="cropUploadSuccess"
             />
-            <label class="el-form-item-label">※图片尺寸要求：288 x 123</label>
+            <label class="el-form-item-label">※图片尺寸要求：1500 x 800</label>
           </el-form-item>
           <el-form-item label="链接URL" prop="linkUrl">
             <el-input v-model="form.linkUrl" style="width: 370px;" />
@@ -177,8 +177,8 @@ export default {
 
 <style scoped>
   .avatar {
-    width: 288px;
-    height: 123px;
+    width: 1500px;
+    height: 800px;
     border-radius: 18px;
   }
   .avatar-small {

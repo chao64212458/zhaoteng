@@ -48,7 +48,7 @@
             <el-input v-model="form.title" style="width: 370px;" />
           </el-form-item>
           <el-form-item label="文章类型" prop="articleType">
-            <el-select v-model="form.articleType" filterable placeholder="请选择">
+            <el-select v-model="form.articleType" filterable placeholder="请选择" @change="selectChange(form.articleType)">
               <el-option
                 v-for="item in dict.article_type"
                 :key="item.id"
@@ -60,19 +60,20 @@
           <el-form-item label="缩略图">
             <!-- <el-input v-model="form.thumbnail" style="width: 370px;" /> -->
             <!--上传图片-->
-            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" class="avatar" @click="toggleShow">
+            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" class="avatar" :height="uploadHeight + 'px'" :width="uploadWidth + 'px'" @click="toggleShow">
             <myUpload
+              ref="uploadRef"
               v-model="show"
               field="file"
               :headers="headers"
-              :width="340"
-              :height="262"
+              :width="uploadWidth"
+              :height="uploadHeight"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
               @crop-upload-success="cropUploadSuccess"
             />
-            <label class="el-form-item-label">※图片尺寸要求：340 x 262</label>
+            <label class="el-form-item-label">※图片尺寸要求：{{ uploadWidth }} x {{ uploadHeight }}</label>
           </el-form-item>
           <el-form-item label="缩略图配文" prop="tips">
             <el-input v-model="form.tips" style="width: 370px;" />
@@ -200,6 +201,16 @@ import { mapGetters } from 'vuex'
 import Avatar from '@/assets/images/noimage.jpg'
 import E from 'wangeditor'
 let image = ''
+// 缩略图尺寸
+const imgsize = [{ 'type': 0, size: { 'width': 340, 'height': 260 }},
+  { 'type': 1, size: { 'width': 1200, 'height': 675 }},
+  { 'type': 3, size: { 'width': 300, 'height': 300 }},
+  { 'type': 4, size: { 'width': 450, 'height': 300 }},
+  { 'type': 5, size: { 'width': 450, 'height': 300 }},
+  { 'type': 9, size: { 'width': 500, 'height': 300 }},
+  { 'type': 11, size: { 'width': 960, 'height': 960 }},
+  { 'type': 12, size: { 'width': 500, 'height': 300 }}
+]
 const defaultForm = { articleId: null, title: '', introduction: '', content: '', thumbnail: null, linkUrl: '', saveFilename: '', filename: '', topFlg: 0, captureFlg: 0, updateUser: null, updateTime: null, tips: '', searchType: 0, createUser: null, createTime: null, articleType: 0, articleDate: null, articleFrom: '' }
 export default {
   name: 'Article',
@@ -215,6 +226,8 @@ export default {
       loading: false,
       show: false,
       Avatar: Avatar,
+      uploadWidth: 100,
+      uploadHeight: 100,
       headers: {
         'Authorization': getToken()
       },
@@ -308,6 +321,21 @@ export default {
       if (!this.editor) {
         this.initEditor()
       }
+    },
+    selectChange(type) {
+      for (var i = 0; i < imgsize.length; i++) {
+        if (imgsize[i].type === type) {
+          this.uploadWidth = imgsize[i].size.width
+          this.uploadHeight = imgsize[i].size.height
+        }
+      }
+
+      this.$refs.uploadRef.off()
+      this.$refs.thumbnail.src = Avatar
+
+      this.$refs.uploadRef.width = this.uploadWidth
+      this.$refs.uploadRef.height = this.uploadHeight
+      // this.$refs.uploadRef.reload()
     },
     initEditor() {
       const _this = this
@@ -474,8 +502,8 @@ export default {
 
 <style scoped>
   .avatar {
-    width: 340px;
-    height: 262px;
+    /*width: 340px;
+    height: 262px; */
     border-radius: 0px;
   }
   .text {
