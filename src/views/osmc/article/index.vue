@@ -60,7 +60,7 @@
           <el-form-item label="缩略图">
             <!-- <el-input v-model="form.thumbnail" style="width: 370px;" /> -->
             <!--上传图片-->
-            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" class="avatar" :height="uploadHeight + 'px'" :width="uploadWidth + 'px'" @click="toggleShow">
+            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" style="border-radius: 0px;" :height="uploadHeight + 'px'" :width="uploadWidth + 'px'" @click="toggleShow">
             <myUpload
               ref="uploadRef"
               v-model="show"
@@ -551,11 +551,6 @@ export default {
 </script>
 
 <style scoped>
-  .avatar {
-    /*width: 340px;
-    height: 262px; */
-    border-radius: 0px;
-  }
   .text {
     text-align:left;
   }
