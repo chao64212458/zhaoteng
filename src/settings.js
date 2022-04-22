@@ -2,7 +2,7 @@ module.exports = {
   /**
    * @description 网站标题
    */
-  title: '奥帆基地',
+  title: '奥帆海洋文化旅游区',
   /**
    * @description 是否显示 tagsView
    */

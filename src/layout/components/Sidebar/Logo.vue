@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      title: '奥帆基地-后台管理',
+      title: '奥帆海洋文化旅游区',
       logo: Logo
     }
   }
