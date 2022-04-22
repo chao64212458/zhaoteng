@@ -11,7 +11,7 @@
       <!--如果想在工具栏加入更多按钮，可以使用插槽方式， slot = 'left' or 'right'-->
       <crudOperation :permission="permission" />
       <!--表单组件-->
-      <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="500px">
+      <el-dialog :close-on-click-modal="false" :before-close="crud.cancelCU" :visible.sync="crud.status.cu > 0" :title="crud.status.title" width="1620px">
         <el-form ref="form" :model="form" :rules="rules" size="small" label-width="80px">
           <el-form-item label="VR名称" prop="vrName">
             <el-input v-model="form.vrName" style="width: 370px;" />
@@ -25,6 +25,7 @@
               :headers="headers"
               :width="1500"
               :height="800"
+              img-format="jpg"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
@@ -179,11 +180,11 @@ export default {
   .avatar {
     width: 1500px;
     height: 800px;
-    border-radius: 18px;
+    /* border-radius: 18px; */
   }
   .avatar-small {
     width: 100px;
     height: 46px;
-    border-radius: 10px;
+    /* border-radius: 10px; */
   }
 </style>

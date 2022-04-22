@@ -48,12 +48,12 @@
         <!-- <label class="el-form-item-label">文章内容</label> -->
         <div class="app-container">
           <el-row :gutter="10">
-            <el-col :xs="24" :sm="24" :md="18" :lg="15" :xl="15">
+            <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
               <div ref="editor" class="text" />
             </el-col>
-            <el-col :xs="24" :sm="24" :md="6" :lg="9" :xl="9">
+            <!-- <el-col :xs="24" :sm="24" :md="6" :lg="9" :xl="9">
               <div v-html="editorContent" />
-            </el-col>
+            </el-col> -->
           </el-row>
         </div>
         <div slot="footer" class="dialog-footer">
@@ -192,7 +192,7 @@ export default {
     [CRUD.HOOK.afterValidateCU](crud) {
       crud.form.thumbnail = image
       crud.form.content = this.editorContent
-      crud.form.articleType = 18
+      crud.form.articleType = 13
     },
     onDialogOpen() {
       if (!this.editor) {
@@ -286,6 +286,6 @@ export default {
   .avatar-small {
     width: 100px;
     height: 46px;
-    border-radius: 10px;
+    /* border-radius: 10px; */
   }
 </style>

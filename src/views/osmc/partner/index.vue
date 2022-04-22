@@ -25,6 +25,7 @@
               :headers="headers"
               :width="300"
               :height="168"
+              img-format="jpg"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
@@ -177,11 +178,11 @@ export default {
   .avatar {
     width: 300px;
     height: 168px;
-    border-radius: 18px;
+    /* border-radius: 18px; */
   }
   .avatar-small {
     width: 100px;
     height: 46px;
-    border-radius: 10px;
+    /* border-radius: 10px; */
   }
 </style>

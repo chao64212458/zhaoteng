@@ -60,14 +60,16 @@
           <el-form-item label="缩略图">
             <!-- <el-input v-model="form.thumbnail" style="width: 370px;" /> -->
             <!--上传图片-->
-            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" style="border-radius: 0px;" :height="uploadHeight + 'px'" :width="uploadWidth + 'px'" @click="toggleShow">
+            <img ref="thumbnail" :src="form.thumbnail ? baseApi + '/file/images/' + form.thumbnail : Avatar" title="点击上传缩略图" :height="uploadHeight + 'px'" :width="uploadWidth + 'px'" @click="toggleShow">
             <myUpload
+              v-if="renderComponent"
               ref="uploadRef"
               v-model="show"
               field="file"
               :headers="headers"
               :width="uploadWidth"
               :height="uploadHeight"
+              img-format="jpg"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
@@ -123,6 +125,7 @@
               :headers="headers"
               :width="200"
               :height="200"
+              img-format="jpg"
               :url="imagesUploadApi"
               :no-circle="true"
               :no-square="true"
@@ -135,12 +138,12 @@
         <!-- <label class="el-form-item-label">文章内容</label> -->
         <div class="app-container">
           <el-row :gutter="10">
-            <el-col :xs="24" :sm="24" :md="18" :lg="15" :xl="15">
+            <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
               <div ref="editor" class="text" />
             </el-col>
-            <el-col :xs="24" :sm="24" :md="6" :lg="9" :xl="9">
+            <!-- <el-col :xs="24" :sm="24" :md="6" :lg="9" :xl="9">
               <div v-html="editorContent" />
-            </el-col>
+            </el-col> -->
           </el-row>
         </div>
         <div slot="footer" class="dialog-footer">
@@ -252,8 +255,9 @@ export default {
       show: false,
       qrshow: false,
       Avatar: Avatar,
-      uploadWidth: 340,
-      uploadHeight: 240,
+      renderComponent: true,
+      // uploadWidth: 340,
+      // uploadHeight: 240,
       headers: {
         'Authorization': getToken()
       },
@@ -299,7 +303,31 @@ export default {
       'videosUploadApi',
       'fileUploadApi',
       'baseApi'
-    ])
+    ]),
+    uploadWidth: function() {
+      for (var i = 0; i < imgsize.length; i++) {
+        if (imgsize[i].type === this.form.articleType) {
+          return imgsize[i].size.width
+        }
+      }
+      // this.$refs.uploadRef.width = this.uploadWidth
+      // this.$refs.uploadRef.height = this.uploadHeight
+      // this.$refs.uploadRef.off()
+      // this.$refs.thumbnail.src = Avatar
+      // this.componentKey += 1
+      // console.info('uploadWidth:' + this.uploadWidth)
+      // console.info('uploadHeight:' + this.uploadHeight)
+
+      return 340
+    },
+    uploadHeight: function() {
+      for (var i = 0; i < imgsize.length; i++) {
+        if (imgsize[i].type === this.form.articleType) {
+          return imgsize[i].size.height
+        }
+      }
+      return 240
+    }
   },
   methods: {
     // 编辑前初始化
@@ -360,22 +388,28 @@ export default {
       this.selectChange(this.form.articleType)
     },
     selectChange(type) {
-      console.info('type:' + type)
-      for (var i = 0; i < imgsize.length; i++) {
-        if (imgsize[i].type === type) {
-          this.uploadWidth = imgsize[i].size.width
-          this.uploadHeight = imgsize[i].size.height
-        }
-      }
+      // console.info('type:' + type)
+      // for (var i = 0; i < imgsize.length; i++) {
+      //   if (imgsize[i].type === type) {
+      //     this.uploadWidth = imgsize[i].size.width
+      //     this.uploadHeight = imgsize[i].size.height
+      //   }
+      // }
+      // this.$refs.uploadRef.width = this.uploadWidth
+      // this.$refs.uploadRef.height = this.uploadHeight
+      // this.$refs.uploadRef.off()
+      // this.$refs.thumbnail.src = Avatar
+      // this.componentKey += 1
+      // console.info('uploadWidth:' + this.uploadWidth)
+      // console.info('uploadHeight:' + this.uploadHeight)
 
-      this.$refs.uploadRef.off()
-      this.$refs.thumbnail.src = Avatar
+      // 从 DOM 中删除 my-component 组件
+      this.renderComponent = false
 
-      this.$refs.uploadRef.width = this.uploadWidth
-      this.$refs.uploadRef.height = this.uploadHeight
-
-      console.info('uploadWidth:' + this.uploadWidth)
-      console.info('uploadHeight:' + this.uploadHeight)
+      this.$nextTick(() => {
+        // 在 DOM 中添加 my-component 组件
+        this.renderComponent = true
+      })
     },
     initEditor() {
       const _this = this
@@ -560,6 +594,6 @@ export default {
   .avatar-small {
     width: 100px;
     height: 46px;
-    border-radius: 10px;
+    /* border-radius: 10px; */
   }
 </style>
