@@ -280,9 +280,6 @@ export default {
   .text {
     text-align:left;
   }
- ::v-deep .w-e-text-container {
-    height: 420px !important;
-  }
   .avatar-small {
     width: 100px;
     height: 46px;
